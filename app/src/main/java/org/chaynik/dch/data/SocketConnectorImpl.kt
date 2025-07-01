@@ -1,11 +1,16 @@
 package org.chaynik.dch.data
 
+import android.content.Context
+import kotlinx.coroutines.delay
 import org.chaynik.dch.WebSocketManager
 
-class SocketConnectorImpl : SocketConnector {
+class SocketConnectorImpl(private val context: Context) : SocketConnector {
+
+    private val webSocketManager by lazy { WebSocketManager(context) }
+
     override suspend fun connect(): Boolean {
-        WebSocketManager.connect()
+        webSocketManager.connect()
         delay(3000)
-        return WebSocketManager.isConnected()
+        return webSocketManager.isConnected()
     }
 }
