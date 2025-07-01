@@ -1,12 +1,11 @@
 package org.chaynik.dch.domain.usecase
 
-import android.content.Context
-import kotlinx.coroutines.delay
-import org.chaynik.dch.WebSocketManager
+import org.chaynik.dch.data.SocketConnector
 import org.chaynik.dch.data.WifiRepository
 
-class ConnectAndSaveSsidUseCase(  private val wifiRepository: WifiRepository,
-                                  private val socketConnector: SocketConnector
+class ConnectAndSaveSsidUseCase(
+    private val wifiRepository: WifiRepository,
+    private val socketConnector: SocketConnector
 ) {
     suspend fun execute(): String? {
         val ssid = wifiRepository.getCurrentSsid()

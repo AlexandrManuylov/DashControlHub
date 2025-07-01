@@ -28,14 +28,14 @@ class SettingsFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         binding.btnConnectWifi.setOnClickListener {
-            viewModel.saveCurrentSsid(
-                onSuccess = { ssid ->
-                    Snackbar.make(binding.root, "Saved SSID: $ssid", Snackbar.LENGTH_SHORT).show()
-                },
-                onFailure = {
-                    Snackbar.make(binding.root, "SSID not found", Snackbar.LENGTH_SHORT).show()
-                }
-            )
+//            viewModel.saveCurrentSsid(
+//                onSuccess = { ssid ->
+//                    Snackbar.make(binding.root, "Saved SSID: $ssid", Snackbar.LENGTH_SHORT).show()
+//                },
+//                onFailure = {
+//                    Snackbar.make(binding.root, "SSID not found", Snackbar.LENGTH_SHORT).show()
+//                }
+//            )
         }
 
         viewModel.statusText.observe(viewLifecycleOwner) {
