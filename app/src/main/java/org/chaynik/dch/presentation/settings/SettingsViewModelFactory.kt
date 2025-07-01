@@ -11,7 +11,7 @@ import org.chaynik.dch.domain.usecase.ConnectAndSaveSsidUseCase
 class SettingsViewModelFactory(private val context: Context) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         val wifiRepo = WifiRepositoryImpl(context)
-        val socketConnector = SocketConnectorImpl()
+        val socketConnector = SocketConnectorImpl(context)
         return SettingsViewModel(
             ConnectAndSaveSsidUseCase(wifiRepo, socketConnector),
             CheckWifiConnectionUseCase(wifiRepo)
