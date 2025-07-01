@@ -1,29 +1,38 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
-    android:gravity="center"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/root_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="24dp">
+    android:orientation="vertical">
 
-    <Button
-        android:id="@+id/btnOnboarding"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Настроить"/>
+    <!-- AppBar -->
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/topAppBar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="?attr/colorSurface"
+        app:theme="@style/ThemeOverlay.MaterialComponents.Toolbar.Primary"
+        app:title="Dash Control Hub" />
 
-    <Button
-        android:id="@+id/btnStartService"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Запустить Service"
-        android:layout_marginTop="16dp"/>
+    <!-- Контейнер для фрагментов -->
+    <androidx.fragment.app.FragmentContainerView
+        android:id="@+id/fragment_container"
+        android:name="androidx.navigation.fragment.NavHostFragment"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        app:defaultNavHost="true"
+        app:navGraph="@navigation/nav_graph" />
 
-    <TextView
-        android:id="@+id/textStatus"
-        android:layout_width="wrap_content"
+    <!-- BottomNavigation -->
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottomNavigation"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Status: Idle"
-        android:textSize="18sp"
-        android:layout_marginTop="32dp"/>
+        app:itemIconTint="@color/selector_bottom_nav"
+        app:itemTextColor="@color/selector_bottom_nav"
+        app:menu="@menu/bottom_nav_menu" />
+
 </LinearLayout>

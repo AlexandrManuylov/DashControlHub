@@ -44,10 +44,14 @@ dependencies {
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation(libs.androidx.activity.ktx)
+    implementation(libs.androidx.activity)
     implementation(libs.androidx.work.runtime.ktx)
 
     implementation(libs.okhttp)
     implementation(libs.rxjava2)
     implementation(libs.rxandroid)
+    implementation(libs.androidx.navigation.fragment.ktx)
+    implementation(libs.androidx.navigation.ui.ktx)
+    implementation(libs.material)
     implementation("androidx.localbroadcastmanager:localbroadcastmanager:1.1.0")
 }

@@ -1,16 +1,11 @@
 package org.chaynik.dch
 
-import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.media.AudioManager
-import android.media.session.MediaSessionManager
-import android.net.wifi.WifiManager
 import android.os.Handler
 import android.os.Looper
-import android.os.SystemClock
 import android.util.Log
-import android.view.KeyEvent
 import java.util.concurrent.TimeUnit
 import okhttp3.OkHttpClient
 import okhttp3.Request
