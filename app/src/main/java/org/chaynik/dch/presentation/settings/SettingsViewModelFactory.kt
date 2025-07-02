@@ -18,7 +18,7 @@ class SettingsViewModelFactory(private val context: Context) : ViewModelProvider
         val commandUseCase = HandleCommandUseCaseImpl(context)
         val webSocketManager: WebSocketRepository = WebSocketManagerImpl(commandUseCase, context)
         return SettingsViewModel(
-            ConnectAndSaveSsidUseCase(wifiRepo, socketConnector),
+            socketConnector,
             CheckWifiConnectionUseCase(wifiRepo),
             commandUseCase,
             webSocketManager

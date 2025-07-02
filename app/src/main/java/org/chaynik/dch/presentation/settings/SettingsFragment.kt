@@ -1,13 +1,17 @@
 package org.chaynik.dch.presentation.settings
 
+import android.Manifest
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
+import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import com.google.android.material.snackbar.Snackbar
 import org.chaynik.dch.databinding.FragmentSettingsBinding
+import org.chaynik.dch.domain.ConnectionState
 
 class SettingsFragment : Fragment() {
 
@@ -28,25 +32,30 @@ class SettingsFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         binding.btnConnectWifi.setOnClickListener {
-//            viewModel.saveCurrentSsid(
-//                onSuccess = { ssid ->
-//                    Snackbar.make(binding.root, "Saved SSID: $ssid", Snackbar.LENGTH_SHORT).show()
-//                },
-//                onFailure = {
-//                    Snackbar.make(binding.root, "SSID not found", Snackbar.LENGTH_SHORT).show()
-//                }
-//            )
+            ActivityCompat.requestPermissions(
+                requireActivity(),
+                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
+                20
+            )
+            viewModel.connectToEsp(requireContext())
         }
 
-        viewModel.statusText.observe(viewLifecycleOwner) {
-            binding.tvWifiStatus.text = "Status: $it"
+        viewModel.connectionState.observe(viewLifecycleOwner) { state ->
+            when (state) {
+                is ConnectionState.Idle -> {}
+                is ConnectionState.Connecting -> showToast("Подключение к ESP...")
+                is ConnectionState.Success -> showToast("Подключено к ${state.ssid}")
+                is ConnectionState.Error -> showToast("Ошибка: ${state.message}")
+            }
         }
-
-        viewModel.checkConnectionStatus()
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+    }
+
+    private fun showToast(message: String) {
+        Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
     }
 }

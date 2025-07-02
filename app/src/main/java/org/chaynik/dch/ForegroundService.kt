@@ -19,6 +19,7 @@ class ForegroundService : Service() {
 
     private lateinit var wifiLockManager: WifiLockManager
     private lateinit var webSocketRepository: WebSocketRepository
+
     override fun onCreate() {
         super.onCreate()
         createNotificationChannel()

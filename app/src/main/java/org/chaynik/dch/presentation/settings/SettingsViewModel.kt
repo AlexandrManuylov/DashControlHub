@@ -1,45 +1,55 @@
 package org.chaynik.dch.presentation.settings
 
+import android.content.Context
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import org.chaynik.dch.WifiHelper
+import org.chaynik.dch.data.SocketConnector
+import org.chaynik.dch.data.SocketConnectorImpl
 import org.chaynik.dch.data.WebSocketRepository
+import org.chaynik.dch.domain.ConnectionState
 import org.chaynik.dch.domain.usecase.CheckWifiConnectionUseCase
 import org.chaynik.dch.domain.usecase.ConnectAndSaveSsidUseCase
 import org.chaynik.dch.domain.usecase.HandleCommandUseCase
 
 class SettingsViewModel(
-    private val connectAndSaveSsidUseCase: ConnectAndSaveSsidUseCase,
+    private val socketConnector: SocketConnector,
     private val checkWifiConnectionUseCase: CheckWifiConnectionUseCase,
     private val handleCommandUseCase: HandleCommandUseCase,
     private val webSocketRepository: WebSocketRepository,
 ) : ViewModel() {
 
-    private val _statusText = MutableLiveData<String>()
-    val statusText: LiveData<String> = _statusText
+    private val _connectionState = MutableLiveData<ConnectionState>(ConnectionState.Idle)
+    val connectionState: LiveData<ConnectionState> = _connectionState
 
-    fun connectToEsp(onSuccess: (String) -> Unit, onFailure: () -> Unit) {
-        CoroutineScope(Dispatchers.Main).launch {
-            val result = connectAndSaveSsidUseCase.execute()
-            if (result != null) {
-                _statusText.value = "Monitoring $result"
-                onSuccess(result)
+    fun connectToEsp(context: Context) {
+        viewModelScope.launch {
+            if (!WifiHelper.isWifiEnabled(context)) {
+                _connectionState.value = ConnectionState.Error("Wi-Fi отключён")
+                return@launch
+            }
+
+            val ssid = WifiHelper.getConnectedSsid(context)
+            if (ssid == null) {
+                _connectionState.value = ConnectionState.Error("Нет подключения к Wi-Fi")
+                return@launch
+            }
+
+            _connectionState.value = ConnectionState.Connecting
+
+            val connected = socketConnector.connect()
+            if (connected) {
+                WifiHelper.saveSsidToPrefs(context, ssid)
+                _connectionState.value = ConnectionState.Success(ssid)
             } else {
-                _statusText.value = "Failed to connect"
-                onFailure()
+                _connectionState.value = ConnectionState.Error("Ошибка подключения к серверу")
             }
         }
     }
 
-    fun checkConnectionStatus() {
-        val (saved, current) = checkWifiConnectionUseCase.execute()
-        if (saved != null && saved == current) {
-            _statusText.value = "Connected to $saved"
-        } else {
-            _statusText.value = "SSID not matched or not saved"
-        }
-    }
 }
