@@ -6,12 +6,16 @@ import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import org.chaynik.dch.data.WebSocketRepository
 import org.chaynik.dch.domain.usecase.CheckWifiConnectionUseCase
 import org.chaynik.dch.domain.usecase.ConnectAndSaveSsidUseCase
+import org.chaynik.dch.domain.usecase.HandleCommandUseCase
 
 class SettingsViewModel(
     private val connectAndSaveSsidUseCase: ConnectAndSaveSsidUseCase,
-    private val checkWifiConnectionUseCase: CheckWifiConnectionUseCase
+    private val checkWifiConnectionUseCase: CheckWifiConnectionUseCase,
+    private val handleCommandUseCase: HandleCommandUseCase,
+    private val webSocketRepository: WebSocketRepository,
 ) : ViewModel() {
 
     private val _statusText = MutableLiveData<String>()

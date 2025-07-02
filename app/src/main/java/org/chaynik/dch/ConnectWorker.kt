@@ -20,12 +20,16 @@ import androidx.work.WorkManager
 import androidx.work.Worker
 import androidx.work.WorkerParameters
 import kotlinx.coroutines.delay
+import org.chaynik.dch.data.WebSocketManagerImpl
+import org.chaynik.dch.data.WebSocketRepository
+import org.chaynik.dch.domain.usecase.HandleCommandUseCase
+import org.chaynik.dch.domain.usecase.HandleCommandUseCaseImpl
 
 class ConnectWorker(context: Context, params: WorkerParameters) :  CoroutineWorker(context, params) {
 
     private lateinit var wifiLockManager: WifiLockManager
-    private lateinit var webSocketManager: WebSocketManager
-    private lateinit var cm: ConnectivityManager
+    private lateinit var webSocketRepository: WebSocketRepository
+    private lateinit var connectivityManager: ConnectivityManager
     private lateinit var callback: ConnectivityManager.NetworkCallback
 
     override suspend fun doWork(): Result {
@@ -36,9 +40,12 @@ class ConnectWorker(context: Context, params: WorkerParameters) :  CoroutineWork
         wifiLockManager = WifiLockManager(applicationContext)
         wifiLockManager.acquire()
 
-        webSocketManager = WebSocketManager(applicationContext)
+        val commandUseCase: HandleCommandUseCase = HandleCommandUseCaseImpl(applicationContext)
+        webSocketRepository = WebSocketManagerImpl(commandUseCase, applicationContext)
 
-        cm = applicationContext.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        // Слежение за Wi-Fi
+        connectivityManager = applicationContext.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+
 
         callback = object : ConnectivityManager.NetworkCallback() {
 
@@ -56,8 +63,8 @@ class ConnectWorker(context: Context, params: WorkerParameters) :  CoroutineWork
                         cancelWork()
                     } else {
                         // Если SSID совпал — можно запускать WebSocket (1 раз)
-                        if (!webSocketManager.isConnected()) {
-                            webSocketManager.connect()
+                        if (!webSocketRepository.isConnected()) {
+                            webSocketRepository.connect()
                         }
                     }
                 }
@@ -74,7 +81,7 @@ class ConnectWorker(context: Context, params: WorkerParameters) :  CoroutineWork
             .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
             .build()
 
-        cm.registerNetworkCallback(networkRequest, callback)
+        connectivityManager.registerNetworkCallback(networkRequest, callback)
 
         while (true) {
             delay(10_000)
@@ -83,7 +90,7 @@ class ConnectWorker(context: Context, params: WorkerParameters) :  CoroutineWork
 
     private fun cancelWork() {
         try {
-            cm.unregisterNetworkCallback(callback)
+            connectivityManager.unregisterNetworkCallback(callback)
         } catch (e: Exception) {
             // ignore
         }

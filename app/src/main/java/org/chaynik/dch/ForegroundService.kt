@@ -10,12 +10,15 @@ import android.content.Intent
 import android.os.Build
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
+import org.chaynik.dch.data.WebSocketManagerImpl
+import org.chaynik.dch.data.WebSocketRepository
+import org.chaynik.dch.domain.usecase.HandleCommandUseCase
+import org.chaynik.dch.domain.usecase.HandleCommandUseCaseImpl
 
 class ForegroundService : Service() {
 
     private lateinit var wifiLockManager: WifiLockManager
-    private lateinit var webSocketManager: WebSocketManager
-
+    private lateinit var webSocketRepository: WebSocketRepository
     override fun onCreate() {
         super.onCreate()
         createNotificationChannel()
@@ -23,15 +26,16 @@ class ForegroundService : Service() {
         wifiLockManager = WifiLockManager(this)
         wifiLockManager.acquire()
 
-        webSocketManager = WebSocketManager(this)
-        webSocketManager.connect()
+        val commandUseCase: HandleCommandUseCase = HandleCommandUseCaseImpl(applicationContext)
+        webSocketRepository = WebSocketManagerImpl(commandUseCase, applicationContext)
+        webSocketRepository.connect()
 
         startForeground(1001, buildNotification("Dash Control Hub connected"))
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        webSocketManager.disconnect()
+        webSocketRepository.disconnect()
         wifiLockManager.release()
     }
 
