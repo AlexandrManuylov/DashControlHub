@@ -27,5 +27,11 @@
             android:text="Status: Disconnected"
             android:textAppearance="?attr/textAppearanceBody1" />
 
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_request_permissions"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Запросить разрешения"
+            android:visibility="gone" />
     </LinearLayout>
 </ScrollView>

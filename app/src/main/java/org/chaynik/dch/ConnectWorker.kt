@@ -6,11 +6,13 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC
 import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkCapabilities
 import android.net.NetworkRequest
 import android.net.wifi.WifiInfo
+import android.net.wifi.WifiManager
 import android.os.Build
 import android.util.Log
 import androidx.core.app.NotificationCompat
@@ -25,7 +27,7 @@ import org.chaynik.dch.data.WebSocketRepository
 import org.chaynik.dch.domain.usecase.HandleCommandUseCase
 import org.chaynik.dch.domain.usecase.HandleCommandUseCaseImpl
 
-class ConnectWorker(context: Context, params: WorkerParameters) :  CoroutineWorker(context, params) {
+class ConnectWorker(val context: Context, params: WorkerParameters) : CoroutineWorker(context, params) {
 
     private lateinit var wifiLockManager: WifiLockManager
     private lateinit var webSocketRepository: WebSocketRepository
@@ -44,17 +46,20 @@ class ConnectWorker(context: Context, params: WorkerParameters) :  CoroutineWork
         webSocketRepository = WebSocketManagerImpl(commandUseCase, applicationContext)
 
         // Слежение за Wi-Fi
-        connectivityManager = applicationContext.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        connectivityManager =
+            applicationContext.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
 
 
         callback = object : ConnectivityManager.NetworkCallback() {
 
-            override fun onCapabilitiesChanged(network: Network, capabilities: NetworkCapabilities) {
+            override fun onCapabilitiesChanged(
+                network: Network,
+                capabilities: NetworkCapabilities
+            ) {
                 super.onCapabilitiesChanged(network, capabilities)
-
                 if (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) {
-                    val wifiInfo = capabilities.transportInfo as? WifiInfo
-                    val ssid = wifiInfo?.ssid?.replace("\"", "")
+                    val wifiManager = context.applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
+                    val ssid = wifiManager.connectionInfo.ssid?.removeSurrounding("\"")
 
                     Log.d("ConnectWorker", "onCapabilitiesChanged: ssid = $ssid")
 
@@ -108,21 +113,33 @@ class ConnectWorker(context: Context, params: WorkerParameters) :  CoroutineWork
                 "Dash Control Hub - Connecting",
                 NotificationManager.IMPORTANCE_LOW
             )
-            val manager = applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            val manager =
+                applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             manager.createNotificationChannel(chan)
         }
 
         val intent = Intent(applicationContext, MainActivity::class.java)
-        val pi = PendingIntent.getActivity(applicationContext, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+        val pi = PendingIntent.getActivity(
+            applicationContext,
+            0,
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
 
-        val notification: Notification = NotificationCompat.Builder(applicationContext, channelId)
+        val builder = NotificationCompat.Builder(applicationContext, channelId)
             .setContentTitle("Dash Control Hub")
             .setContentText("Connected to CB900_WIFI_AP")
             .setSmallIcon(R.drawable.ic_launcher_foreground)
             .setContentIntent(pi)
             .setOngoing(true)
-            .build()
+            .setPriority(NotificationCompat.PRIORITY_LOW)
 
-        return ForegroundInfo(notificationId, notification)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            builder.setForegroundServiceBehavior(Notification.FOREGROUND_SERVICE_IMMEDIATE)
+        }
+        return ForegroundInfo(
+            notificationId, builder.build(),
+            FOREGROUND_SERVICE_TYPE_DATA_SYNC
+        )
     }
 }

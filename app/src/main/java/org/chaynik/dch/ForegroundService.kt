@@ -60,7 +60,7 @@ class ForegroundService : Service() {
             val channel = NotificationChannel(
                 "DCH_CHANNEL", "Dash Control Hub Service", NotificationManager.IMPORTANCE_LOW
             )
-            val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            val manager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
             manager.createNotificationChannel(channel)
         }
     }

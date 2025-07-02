@@ -1,12 +1,16 @@
 package org.chaynik.dch.presentation.settings
 
 import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import com.google.android.material.snackbar.Snackbar
@@ -40,6 +44,16 @@ class SettingsFragment : Fragment() {
             viewModel.connectToEsp(requireContext())
         }
 
+        val missingPermissions = getMissingPermissions()
+        binding.btnRequestPermissions.visibility = if (missingPermissions.isNotEmpty()) View.VISIBLE else View.GONE
+
+        binding.btnRequestPermissions.setOnClickListener {
+            val toRequest = getMissingPermissions()
+            if (toRequest.isNotEmpty()) {
+                requestPermissionsLauncher.launch(toRequest.toTypedArray())
+            }
+        }
+
         viewModel.connectionState.observe(viewLifecycleOwner) { state ->
             when (state) {
                 is ConnectionState.Idle -> {}
@@ -49,6 +63,33 @@ class SettingsFragment : Fragment() {
             }
         }
     }
+
+    private val requiredPermissions = buildList {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            add(Manifest.permission.POST_NOTIFICATIONS)
+        }
+        add(Manifest.permission.ACCESS_FINE_LOCATION)
+        add(Manifest.permission.ACCESS_COARSE_LOCATION)
+    }
+
+    private fun getMissingPermissions(): List<String> {
+        return requiredPermissions.filter {
+            ContextCompat.checkSelfPermission(requireContext(), it) != PackageManager.PERMISSION_GRANTED
+        }
+    }
+
+    private val requestPermissionsLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { result ->
+        val denied = result.filterValues { !it }.keys
+        if (denied.isEmpty()) {
+            Toast.makeText(requireContext(), "Все разрешения выданы", Toast.LENGTH_SHORT).show()
+            binding.btnRequestPermissions.visibility = View.GONE
+        } else {
+            Toast.makeText(requireContext(), "Не выданы: ${denied.joinToString()}", Toast.LENGTH_LONG).show()
+        }
+    }
+
 
     override fun onDestroyView() {
         super.onDestroyView()
