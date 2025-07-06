@@ -5,23 +5,19 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.chaynik.dch.WifiHelper
 import org.chaynik.dch.data.SocketConnector
-import org.chaynik.dch.data.SocketConnectorImpl
-import org.chaynik.dch.data.WebSocketRepository
-import org.chaynik.dch.domain.ConnectionState
+import org.chaynik.dch.data.WebSocketManager
+import org.chaynik.dch.domain.model.ConnectionState
 import org.chaynik.dch.domain.usecase.CheckWifiConnectionUseCase
-import org.chaynik.dch.domain.usecase.ConnectAndSaveSsidUseCase
 import org.chaynik.dch.domain.usecase.HandleCommandUseCase
 
 class SettingsViewModel(
     private val socketConnector: SocketConnector,
     private val checkWifiConnectionUseCase: CheckWifiConnectionUseCase,
     private val handleCommandUseCase: HandleCommandUseCase,
-    private val webSocketRepository: WebSocketRepository,
+    private val webSocketRepository: WebSocketManager,
 ) : ViewModel() {
 
     private val _connectionState = MutableLiveData<ConnectionState>(ConnectionState.Idle)

@@ -1,9 +1,14 @@
 package org.chaynik.dch.presentation.settings
 
 import android.Manifest
+import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.PowerManager
+import android.provider.Settings
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -15,7 +20,8 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import com.google.android.material.snackbar.Snackbar
 import org.chaynik.dch.databinding.FragmentSettingsBinding
-import org.chaynik.dch.domain.ConnectionState
+import org.chaynik.dch.domain.model.ConnectionState
+import androidx.core.net.toUri
 
 class SettingsFragment : Fragment() {
 
@@ -51,6 +57,20 @@ class SettingsFragment : Fragment() {
             val toRequest = getMissingPermissions()
             if (toRequest.isNotEmpty()) {
                 requestPermissionsLauncher.launch(toRequest.toTypedArray())
+            }
+        }
+
+        binding.btnBatteryOptimization.visibility = View.VISIBLE
+
+        binding.btnBatteryOptimization.setOnClickListener {
+            val context = requireContext()
+            val powerManager = context.getSystemService(Context.POWER_SERVICE) as PowerManager
+
+            if (!powerManager.isIgnoringBatteryOptimizations(context.packageName)) {
+                val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
+                    data = "package:${requireContext().packageName}".toUri()
+                }
+                requireActivity().startActivity(intent)
             }
         }
 

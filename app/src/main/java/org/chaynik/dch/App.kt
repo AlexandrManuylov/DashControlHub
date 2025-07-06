@@ -1,15 +1,34 @@
 package org.chaynik.dch
 
 import android.app.Application
+import org.chaynik.dch.data.WebSocketManagerImpl
+import org.chaynik.dch.data.WebSocketManager
+import org.chaynik.dch.domain.usecase.HandleCommandUseCaseImpl
 
-class App: Application() {
+class App : Application() {
 
     override fun onCreate() {
         super.onCreate()
-        initRestClient()
+        instance = this
     }
 
-    private fun initRestClient() {
+    companion object {
 
+        private lateinit var instance: App
+
+        private val webSocketManager: WebSocketManager by lazy {
+            WebSocketManagerImpl(
+                HandleCommandUseCaseImpl()
+            )
+        }
+
+        fun getInstance(): App {
+            return instance
+        }
+
+    }
+
+    fun getWebSocketManager(): WebSocketManager {
+        return webSocketManager
     }
 }

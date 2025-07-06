@@ -8,9 +8,9 @@ import org.chaynik.dch.domain.usecase.HandleCommandUseCaseImpl
 class SocketConnectorImpl(private val context: Context) : SocketConnector {
 
 
-    private val webSocketRepository: WebSocketRepository by lazy {
-        val commandUseCase: HandleCommandUseCase = HandleCommandUseCaseImpl(context)
-        WebSocketManagerImpl(commandUseCase, context)
+    private val webSocketRepository: WebSocketManager by lazy {
+        val commandUseCase: HandleCommandUseCase = HandleCommandUseCaseImpl()
+        WebSocketManagerImpl(commandUseCase)
     }
 
     override suspend fun connect(): Boolean {

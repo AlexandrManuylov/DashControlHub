@@ -6,6 +6,9 @@ import android.content.Intent
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.net.wifi.WifiManager
+import android.os.Build
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import androidx.work.Constraints
 import androidx.work.ExistingWorkPolicy
@@ -13,21 +16,17 @@ import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import org.chaynik.dch.ConnectWorker
+import org.chaynik.dch.ForegroundService
 
-class NetworkEventReceiver : BroadcastReceiver() {
+class BootEventReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent?) {
-        when (intent?.action) {
-            Intent.ACTION_BOOT_COMPLETED -> {
-                log("BOOT_COMPLETED — запускаем ConnectWorker")
-                scheduleConnectWorker(context, "connect_worker_on_boot")
-            }
+        Log.w("ForegroundWork", "onReceive")
+        if (intent?.action == Intent.ACTION_BOOT_COMPLETED) {
+            Log.w("ForegroundWork", "onReceive ACTION_BOOT_COMPLETED")
+            val serviceIntent = Intent(context, ForegroundService::class.java)
+            context.startForegroundService(serviceIntent)
 
-            WifiManager.NETWORK_STATE_CHANGED_ACTION -> {
-                if (isWifiConnected(context)) {
-                    scheduleConnectWorker(context, "connect_worker_wifi")
-                }
-            }
         }
     }
 
@@ -47,14 +46,16 @@ class NetworkEventReceiver : BroadcastReceiver() {
             )
             .build()
 
-        WorkManager.getInstance(context).enqueueUniqueWork(
-            workName,
-            ExistingWorkPolicy.REPLACE,
-            work
-        )
+        Handler(Looper.getMainLooper()).post {
+            WorkManager.getInstance(context).enqueueUniqueWork(
+                workName,
+                ExistingWorkPolicy.REPLACE,
+                work
+            )
+        }
     }
 
     private fun log(msg: String) {
-        Log.d("NetworkEventReceiver", msg)
+        Log.e("NetworkEventReceiver", msg)
     }
 }

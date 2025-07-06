@@ -16,7 +16,12 @@ commands = {
 }
 
 async def send_command(cmd):
-    msg = json.dumps({"cmd": cmd})
+    payload = {
+            "commandType": "media"
+        }
+    payload["message"] = cmd
+
+    msg = json.dumps(payload)
     print(f"Sending: {msg}")
 
     if connected_clients:

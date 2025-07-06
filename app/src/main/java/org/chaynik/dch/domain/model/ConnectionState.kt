@@ -1,4 +1,4 @@
-package org.chaynik.dch.domain
+package org.chaynik.dch.domain.model
 
 sealed class ConnectionState {
     object Idle : ConnectionState()
